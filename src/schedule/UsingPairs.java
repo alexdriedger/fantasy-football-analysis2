@@ -1,20 +1,10 @@
-package com.company;
+package schedule;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.paukov.combinatorics3.Generator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import static com.company.ScheduleGenerator.getPossibleMatchups;
-import static com.company.ScheduleGenerator.getPossibleWeeks;
+import static schedule.ScheduleGenerator.getPossibleWeeks;
 
 public class UsingPairs {
 

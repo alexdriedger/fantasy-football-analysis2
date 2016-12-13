@@ -1,4 +1,4 @@
-package com.company;
+package schedule;
 
 /**
  * Fantasy Football Season

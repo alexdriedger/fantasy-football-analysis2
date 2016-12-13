@@ -1,4 +1,4 @@
-package com.company;
+package schedule;
 
 /**
  * Created by Alex Driedger on 2016-12-12.

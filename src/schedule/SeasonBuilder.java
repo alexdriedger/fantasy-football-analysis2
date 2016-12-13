@@ -1,4 +1,4 @@
-package com.company;
+package schedule;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 

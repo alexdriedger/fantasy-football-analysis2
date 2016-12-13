@@ -1,13 +1,10 @@
-package com.company;
+package schedule;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import static com.company.ScheduleGenerator.getPossibleWeeks;
 
 /**
  * Time Tester
