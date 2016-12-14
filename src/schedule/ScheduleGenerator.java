@@ -3,10 +3,7 @@ package schedule;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.paukov.combinatorics3.Generator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
@@ -20,6 +17,7 @@ public class ScheduleGenerator {
 
     /**
      * Create all possible weeks for a given number of teams
+     * // TODO: Make unmodifiable
      *
      * Example: numTeams = 4
      *      [(0, 1), (2, 3)]
@@ -58,6 +56,7 @@ public class ScheduleGenerator {
 
     /**
      * Creates all possible head to head matchups for a given number of teams
+     * // TODO: Make unmodifiable
      *
      * Example: numTeams = 4
      *      [0, 1], [0, 2], [0, 3]

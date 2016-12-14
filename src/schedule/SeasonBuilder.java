@@ -43,10 +43,18 @@ public interface SeasonBuilder {
     boolean validWeek(final Set<ImmutablePair<Integer, Integer>> newWeek);
 
     /**
-     * Returns the weeks in the Season
-     * @return
+     * Returns the weeks in the {@link SeasonBuilder}
+     *
+     * @return weeks in the SeasonBuilder
      */
     ConcurrentMap<Integer, Set<ImmutablePair<Integer, Integer>>> getWeeks();
+
+    /**
+     * Returns possible matchups which are still allowed to occur for this
+     *
+     * @return possible matchups
+     */
+    ConcurrentMap<Integer, Integer> getPossibleMatchups();
 
     /**
      * Returns a {@link Season} representation of this {@link SeasonBuilder} object.
@@ -54,4 +62,11 @@ public interface SeasonBuilder {
      * @return {@link Season} representation
      */
     Season toSeason();
+
+    /**
+     * Returns the number of weeks in the season
+     *
+     * @return Weeks in the Season
+     */
+    int getWeeksInSeason();
 }
