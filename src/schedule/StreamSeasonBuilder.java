@@ -1,12 +1,10 @@
 package schedule;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.paukov.combinatorics3.Generator;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -17,17 +15,18 @@ import static org.paukov.combinatorics3.Generator.combination;
 /**
  * Util class for creating Seasons. Immutable
  */
-public class StreamSeasonBuilder implements SeasonBuilder {
+final public class StreamSeasonBuilder implements SeasonBuilder {
 
     // Immutability argument:
         // Getter methods return a copy of internal maps
         // ImmutablePair doesn't need to be copied because it is immutable
         // Adding weeks to the SeasonBuilder creates new SeasonBuilder objects
         // without modifying the current one
+        // Class is final
 
     // Schedule for the Season
     // RI:
-        // 1 <= key <= 16
+        // 1 <= key <= 17
         // 1 <= ImmutablePair Integers <= MAX_TEAMS_IN_LEAGUE
     // AF:
         // Week in a season maps to the matchups for that week
@@ -60,7 +59,7 @@ public class StreamSeasonBuilder implements SeasonBuilder {
         ConcurrentMap<Integer, Integer> posMatchups = new ConcurrentHashMap<>();
         Set<ImmutablePair<Integer, Integer>> allMatchups = ScheduleGenerator.getPossibleMatchups(numTeams);
 
-        // maxDuplicateMatchup = (weeksInSeason / number of teams in league) rounded up
+        // maxDuplicateMatchup = (weeksInSeason / number of teams in league - 1) rounded up
         final int maxDuplicateMatchup = (int) Math.ceil( (double) numWeeks / (numTeams - 1.0) );
 
         for (Iterator<ImmutablePair<Integer, Integer>> it = allMatchups.iterator(); it.hasNext();) {
@@ -91,25 +90,29 @@ public class StreamSeasonBuilder implements SeasonBuilder {
         Set<SeasonBuilder> sbSet = Collections.synchronizedSet(new HashSet<>());
         sbSet.add(new StreamSeasonBuilder(numWeeks, numTeams));
 
-        System.out.println("Size of the set is " + sbSet.size());
-
         // Get possible weeks
         Set<Set<ImmutablePair<Integer, Integer>>> possibleWeeks = ScheduleGenerator.getPossibleWeeks(numTeams);
 
         // Add all the weeks for the number of weeks in the season
-        Stream<SeasonBuilder> sbStream = sbSet.stream();
+        Stream<SeasonBuilder> sbStream = sbSet.parallelStream();
         for (int i = 1; i <= numWeeks; i++) {
-            System.out.println("Working on week " + i);
-            sbStream = sbStream.map(sb -> sb.addWeeks(possibleWeeks)).flatMap(Collection::stream);
+//            sbStream = sbStream.map(sb -> sb.addWeeks(possibleWeeks)).flatMap(Collection::stream);
+            sbStream = sbStream.flatMap(sb -> sb.generateWeeks(possibleWeeks));
         }
 
         // Collect the SeasonBuilders into a Set
         return sbStream.collect(Collectors.toSet());
+//        ConcurrentMap<SeasonBuilder, Boolean> map = sbStream
+//                .collect(Collectors.toConcurrentMap(Function.identity(), x -> Boolean.TRUE));
+//
+//        System.out.println("Map is done!");
+
+//        return map.keySet();
     }
 
     /**
      * Create a new SeasonBuilder with a new week. Adjusts the possible matchups left
-     * to reflect the new week added
+     * to reflect the new week added.
      *
      * @param sb
      *          SeasonBuilder to build off of
@@ -136,19 +139,6 @@ public class StreamSeasonBuilder implements SeasonBuilder {
         // Get the possible matchups from previous SeasonBuilder
         possibleMatchups = sb.getPossibleMatchups();
 
-        // Populate possible matchups if this is the first week added to the SeasonBuilder
-        if (possibleMatchups.size() == 0) {
-            Set<ImmutablePair<Integer, Integer>> allMatchups = ScheduleGenerator.getPossibleMatchups(newWeek.size());
-
-            // maxDuplicateMatchup = (weeksInSeason / number of teams in league) rounded up
-            final int maxDuplicateMatchup = (int) Math.ceil((double) weeksInSeason / (newWeek.size() * 2.0));
-
-            for (Iterator<ImmutablePair<Integer, Integer>> it = allMatchups.iterator(); it.hasNext();) {
-                ImmutablePair<Integer, Integer> currentMatchup = it.next();
-                possibleMatchups.put(currentMatchup.hashCode(), maxDuplicateMatchup);
-            }
-        }
-
         // Reduce the count on each possible matchup in the week is being added
         for (Iterator<ImmutablePair<Integer, Integer>> it = newWeek.iterator(); it.hasNext();) {
             // Get the matchup in the week
@@ -166,11 +156,11 @@ public class StreamSeasonBuilder implements SeasonBuilder {
     public ConcurrentMap<Integer, Set<ImmutablePair<Integer, Integer>>> getWeeks() {
         ConcurrentMap<Integer, Set<ImmutablePair<Integer, Integer>>> weeksCopy = new ConcurrentHashMap<>();
 
-        // Deep copy of weeks. ImmutablePair does not need to be deep copied because
-        // it is immutable
+        // Copy of weeks. ImmutablePair does not need to be deep copied because
+        // it is immutable. Make each set unmodifiable so it cannot be changed.
         for (Iterator<Integer> it = weeks.keySet().iterator(); it.hasNext(); ) {
             Integer currentWeek = it.next();
-            weeksCopy.put(currentWeek, weeks.get(currentWeek));
+            weeksCopy.put(currentWeek, Collections.unmodifiableSet(weeks.get(currentWeek)));
         }
 
         return weeksCopy;
@@ -187,6 +177,13 @@ public class StreamSeasonBuilder implements SeasonBuilder {
         }
 
         return matchupsCopy;
+    }
+
+    @Override
+    public Stream<SeasonBuilder> generateWeeks(final Set<Set<ImmutablePair<Integer, Integer>>> possibleWeeks) {
+        return possibleWeeks.stream()
+                .filter(containsMatchup())
+                .map(this::addWeek);
     }
 
     @Override
@@ -225,8 +222,7 @@ public class StreamSeasonBuilder implements SeasonBuilder {
 
     @Override
     public Season toSeason() {
-        // TODO: Impliment this
-        return new ConcreateSeason(); // TODO: Change this
+        return new ConcreteSeason(this);
     }
 
     @Override

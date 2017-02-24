@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 /**
  * Util interface for creating Seasons
@@ -69,4 +70,7 @@ public interface SeasonBuilder {
      * @return Weeks in the Season
      */
     int getWeeksInSeason();
+
+    // Change or get rid of this
+    Stream<SeasonBuilder> generateWeeks(final Set<Set<ImmutablePair<Integer, Integer>>> possibleWeeks);
 }
