@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Parses scores.xml into useful information
  */
-public class xmlParser {
+public class XMLParser {
 
     public static List<Double> getScoresFromXML (NodeList weeks) {
         // List will be the same length as the NodeList that is passed in

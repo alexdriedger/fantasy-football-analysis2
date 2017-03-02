@@ -1,4 +1,4 @@
-package schedule.Tests;
+package schedule.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Tests for getPossibleSeasons
+ * tests for getPossibleSeasons
  */
 @RunWith(Parameterized.class)
 public class GetPossibleWeeksTest {

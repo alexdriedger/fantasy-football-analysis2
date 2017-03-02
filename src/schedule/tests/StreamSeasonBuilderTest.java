@@ -1,4 +1,4 @@
-package schedule.Tests;
+package schedule.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -8,7 +8,7 @@ import schedule.StreamSeasonBuilder;
 import java.util.Set;
 
 /**
- * Tests for {@link StreamSeasonBuilder}
+ * tests for {@link StreamSeasonBuilder}
  */
 public class StreamSeasonBuilderTest {
 

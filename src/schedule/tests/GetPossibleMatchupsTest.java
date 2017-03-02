@@ -1,8 +1,7 @@
-package schedule.Tests;
+package schedule.tests;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import schedule.ScheduleGenerator;
 

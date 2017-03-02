@@ -1,17 +1,16 @@
-package schedule.Tests;
+package schedule.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import schedule.DepthFirstSeasonBuilder;
-import schedule.ScheduleGenerator;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Tests for the DepthFirstSeasonBuilder
+ * tests for the DepthFirstSeasonBuilder
  */
 @RunWith(Parameterized.class)
 public class DepthFirstSeasonBuilderTest {

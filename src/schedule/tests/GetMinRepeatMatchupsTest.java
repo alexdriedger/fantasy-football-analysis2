@@ -1,4 +1,4 @@
-package schedule.Tests;
+package schedule.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Tests for getMaxRepeatMatchups
+ * tests for getMaxRepeatMatchups
  */
 @RunWith(Parameterized.class)
 public class GetMinRepeatMatchupsTest {
