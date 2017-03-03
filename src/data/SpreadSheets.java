@@ -1,22 +1,13 @@
 package data;
 
-import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import javax.swing.text.Style;
-import java.awt.*;
-import java.awt.Color;
 import java.io.FileOutputStream;
-
-import static java.awt.Color.blue;
-import static java.awt.Color.red;
 
 /**
  * Utility for writing simulation data to a visually pleasant spreadsheet
@@ -38,6 +29,9 @@ public class SpreadSheets {
     private static final byte[] COLOR_RGB_GOOD_FONT = new byte[]{(byte) 0, (byte) 97, (byte) 0};
     private static final byte[] COLOR_RGB_NEUTRAL_BACKGROUND = new byte[]{(byte) 255, (byte) 235, (byte) 156};
     private static final byte[] COLOR_RGB_NEUTRAL_FONT = new byte[]{(byte) 156, (byte) 101, (byte) 0};
+    private static final byte[] COLOR_RGB_CONDITIONAL_GOOD = new byte[]{(byte) 99, (byte) 190, (byte) 123};
+    private static final byte[] COLOR_RGB_CONDITIONAL_BAD = new byte[]{(byte) 248, (byte) 105, (byte) 107};
+    private static final byte[] COLOR_RGB_CONDITIONAL_NEUTRAL = new byte[]{(byte) 254, (byte) 235, (byte) 132};
 
     // Font constants
     private static final String FONT_DEFAULT_NAME = "Calibri";
@@ -52,9 +46,12 @@ public class SpreadSheets {
     private static final int ROW_LEAGUE_NAME = 0;
     private static final int ROW_LEAGUE_YEAR = 1;
     private static final int ROW_RAW_WINS_HEADER = 3;
+    private static final int ROW_PERCENT_WINS_HEADER = 9;
 
     // Titles of sections
     private static final String TITLE_WINS = "Wins";
+    private static final String TITLE_TOTAL_SIMS = "Total Sims";
+    private static final String TITLE_CHAMPIONSHIPS = "Rangs";
 
     /**
      * Creates a new {@link Workbook} with one {@link Sheet} created with the season simulation template.
@@ -70,7 +67,8 @@ public class SpreadSheets {
 
         createWinDistributionTemplate(wb, sheet, lengthOfRegularSeason);
         createHeader(wb, sheet, lengthOfRegularSeason);
-
+        createTotalSimsTitleCell(wb, sheet, lengthOfRegularSeason);
+        createChampionshipTitleCell(wb, sheet, lengthOfRegularSeason);
 
         try {
             FileOutputStream fileOut = new FileOutputStream("src/data/testing.xlsx");
@@ -81,7 +79,7 @@ public class SpreadSheets {
             throw new RuntimeException("Could not write output file");
         }
 
-        return wb; // TODO : CHANGE THIS
+        return wb;
     }
 
     /**
@@ -141,18 +139,44 @@ public class SpreadSheets {
     }
 
     private static void createWinDistributionTemplate(XSSFWorkbook wb, Sheet sheet, int maxWins) {
+        createWinDistributionTitleRow(wb, sheet, maxWins, ROW_RAW_WINS_HEADER);
+        createWinDistributionTitleRow(wb, sheet, maxWins, ROW_PERCENT_WINS_HEADER);
+
+        // Create Range
+        CellRangeAddress[] range = {CellRangeAddress.valueOf("$B$5:$P$8")};
+        createColorGradedConditionFormatting(wb, sheet, range);
+
+        // Create Range
+        CellRangeAddress[] rangePercent = {CellRangeAddress.valueOf("$B$11:$P$14")};
+        createColorGradedConditionFormatting(wb, sheet, rangePercent);
+    }
+
+    private static void createColorGradedConditionFormatting(XSSFWorkbook wb, Sheet sheet, CellRangeAddress[] range) {
+        // Get sheet conditional formatting
+        SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
+
+        // Create Rule
+        ConditionalFormattingRule colorGradedRule = sheetCF.createConditionalFormattingColorScaleRule();
+        ColorScaleFormatting format = colorGradedRule.getColorScaleFormatting();
+        format.setColors(new Color[]{new XSSFColor(COLOR_RGB_CONDITIONAL_BAD), new XSSFColor(COLOR_RGB_CONDITIONAL_NEUTRAL), new XSSFColor(COLOR_RGB_CONDITIONAL_GOOD)});
+        ConditionalFormattingRule[] rules = {colorGradedRule};
+
+        // Set rule
+        sheetCF.addConditionalFormatting(range, rules);
+    }
+
+    private static void createWinDistributionTitleRow(XSSFWorkbook wb, Sheet sheet, int maxWins, int row) {
         // Get cell style for the title cell
         XSSFCellStyle titleStyle = getCustomStyle(wb, COLOR_RGB_WINS_TITLE, FONT_DATA_HEIGHT, true);
 
         // Create title cell
-        Row winsRow = sheet.createRow(ROW_RAW_WINS_HEADER);
-        Cell winsCell = winsRow.createCell(COL_BEGINNING_OF_SHEET);
-        winsCell.setCellStyle(titleStyle);
-        winsCell.setCellValue(TITLE_WINS);
+        Cell titleCell = createCellWithStyle(titleStyle, sheet, row, COL_BEGINNING_OF_SHEET);
+        titleCell.setCellValue(TITLE_WINS);
 
         // Create a cell for each number of possible wins
         XSSFCellStyle numberStyle = getCustomStyle(wb, COLOR_RGB_WINS_TITLE, FONT_DATA_HEIGHT, false);
         final int startingColumn = COL_BEGINNING_OF_SHEET + 1;
+        final Row winsRow = sheet.getRow(row);
         for (int wins = 0; wins <= maxWins; wins++) {
             Cell cell = winsRow.createCell(startingColumn + wins);
             cell.setCellValue(wins);
@@ -168,6 +192,36 @@ public class SpreadSheets {
         Row row = sheet.createRow(rowNumber);
         Cell cell = row.createCell(startCol);
         cell.setCellStyle(style);
+    }
+
+    private static Cell createCellWithStyle(XSSFCellStyle style, Sheet sheet, int rowNum, int colNum) {
+        // Create cell
+        Row row = sheet.getRow(rowNum);
+        if (row == null) {
+            row = sheet.createRow(rowNum);
+        }
+        Cell cell = row.createCell(colNum);
+        cell.setCellStyle(style);
+
+        return cell;
+    }
+
+    private static void createTotalSimsTitleCell(XSSFWorkbook wb, Sheet sheet, int maxWins) {
+        // Get cell style for the title cell
+        XSSFCellStyle titleStyle = getCustomStyle(wb, COLOR_RGB_LEAGUE_NAME, FONT_DATA_HEIGHT, false);
+
+        Cell cell = createCellWithStyle(titleStyle, sheet, ROW_LEAGUE_NAME, (maxWins + 4));
+        cell.setCellValue(TITLE_TOTAL_SIMS);
+    }
+
+    private static void createChampionshipTitleCell(XSSFWorkbook wb, Sheet sheet, int maxWins) {
+        // Get cell style for the title cell
+        XSSFCellStyle titleStyle = getCustomStyle(wb, COLOR_RGB_CHAMPIONSHIPS_TITLE, FONT_DATA_HEIGHT, true);
+
+        Cell topCell = createCellWithStyle(titleStyle, sheet, ROW_RAW_WINS_HEADER, (maxWins + 4));
+        Cell bottomCell = createCellWithStyle(titleStyle, sheet, ROW_PERCENT_WINS_HEADER, (maxWins + 4));
+        topCell.setCellValue(TITLE_CHAMPIONSHIPS);
+        bottomCell.setCellValue(TITLE_CHAMPIONSHIPS);
     }
 
     public static void addWinDistribution(Sheet sheet, int[][] winDistribution) {

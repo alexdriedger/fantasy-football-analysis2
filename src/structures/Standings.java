@@ -58,4 +58,12 @@ public class Standings {
     public int getNumTeams() {
         return teamRecords.size();
     }
+
+    /**
+     * Returns the standings, in order of wins.
+     * @return
+     */
+    public List<String> getStandings() {
+        return new ArrayList<>();
+    }
 }
