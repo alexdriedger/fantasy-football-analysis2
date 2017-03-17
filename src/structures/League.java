@@ -18,6 +18,11 @@ public class League {
     // Must call getRefreshedStdDev to get an actual value
     private double stdDev = Double.MIN_VALUE;
 
+    // Contains league format info
+    // TODO : ADD LEAGUE PROPERTIES TO XML FILE AND READ THEM IN
+    private LeagueProperties leagueProperties = new LeagueProperties(14, LeagueProperties.PLAYOFF_STRUCTURE_2017,
+            new HashSet<>(Arrays.asList(2011, 2012, 2013, 2014, 2015, 2016)));
+
     /**
      * Creates an empty league
      */
@@ -62,17 +67,6 @@ public class League {
     }
 
     /**
-     * Returns an ordering mapped to team names. This ordering is based on Team names
-     *
-     * @return
-     *          map of teamID to teamName
-     */
-    public Map<Integer, String> getTeamsMapping() {
-        // TODO : IMPLEMETNT THIS
-        return null;
-    }
-
-    /**
      * Returns all {@link Team}s associated with the {@link League}
      * @return
      *          All Teams in the League
@@ -103,6 +97,14 @@ public class League {
 
     public int getNumberOfTeams() {
         return league.size();
+    }
+
+    public LeagueProperties getLeagueProperties() {
+        return leagueProperties;
+    }
+
+    public void setLeagueProperties(LeagueProperties leagueProperties) {
+        this.leagueProperties = leagueProperties;
     }
 
     /**

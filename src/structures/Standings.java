@@ -3,13 +3,14 @@ package structures;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Holds the standings for the end of the regular season
+ *
+ * TODO : MAKE METHODS LESS RELIANT ON THE ORDER OF TEAM RECORDS
+ * TODO : GIVE EVERY TEAM AN ID TO USE TO KEEP TRACK OF AS WELL AS A TEAM NAME
  */
 public class Standings {
 
@@ -29,18 +30,16 @@ public class Standings {
         }
     }
 
-    public void addWin(int teamID) {
-//        MutableTriple<Integer, Integer, Integer> rec = records.get(name);
-//        rec.left++;
-        teamRecords.get(teamID - 1).incrementWins();
+    public void addWin(int teamID, double pointsScored) {
+        teamRecords.get(teamID - 1).incrementWins(pointsScored);
     }
 
-    public void addLoss(int teamID) {
-        teamRecords.get(teamID - 1).incrementLosses();
+    public void addLoss(int teamID, double pointsScored) {
+        teamRecords.get(teamID - 1).incrementLosses(pointsScored);
     }
 
-    public void addTies(int teamID) {
-        teamRecords.get(teamID - 1).incrementTies();
+    public void addTies(int teamID, double pointsScored) {
+        teamRecords.get(teamID - 1).incrementTies(pointsScored);
     }
 
     public int getWins(int teamID) {
@@ -60,10 +59,28 @@ public class Standings {
     }
 
     /**
-     * Returns the standings, in order of wins.
+     * Returns the standings. Priority is:
+     *
+     *      1. Wins
+     *      2. Points For
+     *
      * @return
+     *      List in order of place
      */
     public List<String> getStandings() {
-        return new ArrayList<>();
+        // Create a new list of records and copy over the contents
+        List<TeamRecord> records = new ArrayList<>();
+        for (TeamRecord tr : teamRecords) {
+            records.add(new TeamRecord(tr));
+        }
+
+        // Sort the list by wins, then points for if there are ties
+        Collections.sort(records, TeamRecord.TeamRecordComparator);
+        Collections.reverse(records);
+
+        return records.stream()
+                // Map records to Team names
+                .map(TeamRecord::getTeamName)
+                .collect(Collectors.toList());
     }
 }
